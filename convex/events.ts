@@ -30,6 +30,7 @@ export const listEvents = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -71,6 +72,7 @@ export const getFeaturedEvents = query({
     socials: v.array(v.string()),
     created_by: v.optional(v.id("users")),
     is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
   })),
   handler: async (ctx, args) => {
@@ -116,6 +118,7 @@ export const getEventsByCountry = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -165,6 +168,7 @@ export const getEvent = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     }),
     v.null()
@@ -196,6 +200,7 @@ export const createEvent = mutation({
     socials: v.array(v.string()),
     created_by: v.id("users"),
     is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
   },
   returns: v.id("events"),
@@ -223,6 +228,7 @@ export const createEvent = mutation({
       socials: args.socials,
       created_by: args.created_by,
       is_featured: args.is_featured || false,
+      world_approved: args.world_approved || false,
       status: args.status || "draft",
     });
   },
@@ -250,6 +256,7 @@ export const updateEvent = mutation({
     logo_url: v.optional(v.string()),
     socials: v.optional(v.array(v.string())),
     is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     user_id: v.id("users"),
   },
@@ -278,6 +285,7 @@ export const updateEvent = mutation({
     if (args.logo_url !== undefined) updates.logo_url = args.logo_url;
     if (args.socials !== undefined) updates.socials = args.socials;
     if (args.is_featured !== undefined) updates.is_featured = args.is_featured;
+    if (args.world_approved !== undefined) updates.world_approved = args.world_approved;
     if (args.status !== undefined) updates.status = args.status;
 
     await ctx.db.patch(args.id, updates);
@@ -341,6 +349,7 @@ export const searchEvents = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),

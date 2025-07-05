@@ -97,6 +97,7 @@ export default function AdminPage() {
   const updateEvent = useMutation(api.admin.updateEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
   const toggleFeatured = useMutation(api.admin.toggleEventFeatured);
+  const toggleWorldApproved = useMutation(api.admin.toggleEventWorldApproved);
   const bulkUpdateStatus = useMutation(api.admin.bulkUpdateEventStatus);
   const bulkDelete = useMutation(api.admin.bulkDeleteEvents);
 
@@ -209,6 +210,17 @@ export default function AdminPage() {
       });
     } catch (err) {
       console.error("Failed to toggle featured:", err);
+    }
+  };
+
+  const handleToggleWorldApproved = async (eventId: Id<"events">) => {
+    try {
+      await toggleWorldApproved({
+        admin_user_id: isDevelopmentMode ? undefined : (currentUserId || undefined),
+        event_id: eventId
+      });
+    } catch (err) {
+      console.error("Failed to toggle world approved:", err);
     }
   };
 
@@ -446,6 +458,12 @@ export default function AdminPage() {
                               Featured
                             </Badge>
                           )}
+                          {event.world_approved && (
+                            <Badge variant="outline" className="text-black border-black">
+                              <span className="mr-1">✓</span>
+                              World Approved
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600 mt-1">{event.tagline}</p>
                         <p className="text-xs text-gray-500 mt-1">
@@ -458,13 +476,24 @@ export default function AdminPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => handleToggleFeatured(event._id)}
+                        title="Toggle Featured"
                       >
                         <Star className="h-4 w-4" />
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
+                        onClick={() => handleToggleWorldApproved(event._id)}
+                        title="Toggle World Approved"
+                        className={event.world_approved ? "bg-gray-100 text-black border-black" : ""}
+                      >
+                        <span className="text-sm font-bold">✓</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => setEditingEvent(event._id)}
+                        title="Edit Event"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -476,6 +505,7 @@ export default function AdminPage() {
                             deleteEvent({ id: event._id, user_id: currentUserId! });
                           }
                         }}
+                        title="Delete Event"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -520,6 +550,7 @@ function EditEventForm({ event, onSubmit, onCancel }: {
     logo_url: event.logo_url || "",
     socials: event.socials || [],
     is_featured: event.is_featured || false,
+    world_approved: event.world_approved || false,
     status: event.status || "draft",
   });
 
@@ -723,8 +754,8 @@ function EditEventForm({ event, onSubmit, onCancel }: {
           </select>
         </div>
 
-        <div>
-          <label className="flex items-center mt-8">
+        <div className="space-y-4">
+          <label className="flex items-center">
             <input
               type="checkbox"
               checked={formData.is_featured}
@@ -732,6 +763,18 @@ function EditEventForm({ event, onSubmit, onCancel }: {
               className="mr-2"
             />
             Featured Event
+          </label>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={formData.world_approved}
+              onChange={(e) => handleInputChange("world_approved", e.target.checked)}
+              className="mr-2"
+            />
+            <span className="flex items-center">
+              <span className="mr-1">✓</span>
+              World Approved
+            </span>
           </label>
         </div>
       </div>

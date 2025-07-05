@@ -22,13 +22,15 @@ export default defineSchema({
     // Additional fields for admin management
     created_by: v.optional(v.id("users")),
     is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
   })
     .index("by_start_date", ["start_date"])
     .index("by_location_country", ["location.country"])
     .index("by_status", ["status"])
     .index("by_created_by", ["created_by"])
-    .index("by_featured", ["is_featured"]),
+    .index("by_featured", ["is_featured"])
+    .index("by_world_approved", ["world_approved"]),
 
   // Users table for World ID authentication
   users: defineTable({

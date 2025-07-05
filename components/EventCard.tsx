@@ -26,6 +26,7 @@ interface EventCardProps {
     logo_url?: string;
     socials: string[];
     is_featured?: boolean;
+    world_approved?: boolean;
     status?: "draft" | "published" | "archived";
   };
   featured?: boolean;
@@ -82,11 +83,19 @@ export default function EventCard({ event, featured = false }: EventCardProps) {
               </p>
             </div>
           </div>
-          {event.is_featured && (
-            <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
-              Featured
-            </Badge>
-          )}
+          <div className="flex flex-col space-y-1">
+            {event.is_featured && (
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+                Featured
+              </Badge>
+            )}
+            {event.world_approved && (
+              <Badge variant="secondary" className="bg-gray-100 text-black border-gray-300">
+                <span className="mr-1">✓</span>
+                World Approved
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
 

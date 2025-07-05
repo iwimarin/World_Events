@@ -31,6 +31,7 @@ export const getAllEventsForAdmin = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -85,6 +86,7 @@ export const getEventsByStatus = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -309,6 +311,7 @@ export const getEventsByCreator = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -438,6 +441,7 @@ export const searchEventsForAdmin = query({
       socials: v.array(v.string()),
       created_by: v.optional(v.id("users")),
       is_featured: v.optional(v.boolean()),
+      world_approved: v.optional(v.boolean()),
       status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
     })),
     isDone: v.boolean(),
@@ -491,6 +495,7 @@ export const updateEvent = mutation({
     logo_url: v.optional(v.string()),
     socials: v.optional(v.array(v.string())),
     is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
     status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
   },
   returns: v.null(),
@@ -522,10 +527,42 @@ export const updateEvent = mutation({
     if (args.logo_url !== undefined) updateData.logo_url = args.logo_url;
     if (args.socials !== undefined) updateData.socials = args.socials;
     if (args.is_featured !== undefined) updateData.is_featured = args.is_featured;
+    if (args.world_approved !== undefined) updateData.world_approved = args.world_approved;
     if (args.status !== undefined) updateData.status = args.status;
 
     // Update the event
     await ctx.db.patch(args.event_id, updateData);
+    return null;
+  },
+});
+
+/**
+ * Toggle event world approved status
+ */
+export const toggleEventWorldApproved = mutation({
+  args: {
+    admin_user_id: v.optional(v.id("users")),
+    event_id: v.id("events"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // In development mode, skip admin check
+    if (args.admin_user_id) {
+      // Verify admin status
+      const admin = await ctx.db.get(args.admin_user_id);
+      if (!admin || !admin.is_admin) {
+        throw new Error("Only admins can toggle world approved status");
+      }
+    }
+
+    // Get event
+    const event = await ctx.db.get(args.event_id);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Toggle world approved status
+    await ctx.db.patch(args.event_id, { world_approved: !event.world_approved });
     return null;
   },
 }); 
