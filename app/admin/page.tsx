@@ -123,7 +123,7 @@ export default function AdminPage() {
   );
 
   // Mutations
-  const createEvent = useMutation(api.events.createEvent);
+  const createEvent = useMutation(api.admin.createEvent);
   const updateEvent = useMutation(api.admin.updateEvent);
   const deleteEvent = useMutation(api.events.deleteEvent);
   const toggleFeatured = useMutation(api.admin.toggleEventFeatured);
@@ -271,17 +271,9 @@ export default function AdminPage() {
   };
 
   const handleCreateSubmit = async (eventData: any) => {
-    if (isDevelopmentMode) {
-      alert("Development Mode: Would create new event");
-      setShowCreateForm(false);
-      return;
-    }
-    
-    if (!currentUserId) return;
-    
     try {
       await createEvent({
-        created_by: currentUserId,
+        admin_user_id: isDevelopmentMode ? undefined : (currentUserId || undefined),
         ...eventData
       });
       setShowCreateForm(false);

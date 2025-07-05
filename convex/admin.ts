@@ -565,4 +565,58 @@ export const toggleEventWorldApproved = mutation({
     await ctx.db.patch(args.event_id, { world_approved: !event.world_approved });
     return null;
   },
+});
+
+/**
+ * Create a new event (admin function with development mode support)
+ */
+export const createEvent = mutation({
+  args: {
+    admin_user_id: v.optional(v.id("users")),
+    name: v.string(),
+    tagline: v.string(),
+    description: v.string(),
+    start_date: v.string(),
+    end_date: v.string(),
+    location: v.object({
+      city: v.string(),
+      country: v.string(),
+    }),
+    type: v.object({
+      conference: v.boolean(),
+      hackathon: v.boolean(),
+    }),
+    logo_url: v.optional(v.string()),
+    socials: v.array(v.string()),
+    is_featured: v.optional(v.boolean()),
+    world_approved: v.optional(v.boolean()),
+    status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
+  },
+  returns: v.id("events"),
+  handler: async (ctx, args) => {
+    // In development mode, skip admin check
+    if (args.admin_user_id) {
+      // Verify admin status
+      const admin = await ctx.db.get(args.admin_user_id);
+      if (!admin || !admin.is_admin) {
+        throw new Error("Only admins can create events");
+      }
+    }
+
+    return await ctx.db.insert("events", {
+      name: args.name,
+      tagline: args.tagline,
+      description: args.description,
+      start_date: args.start_date,
+      end_date: args.end_date,
+      location: args.location,
+      type: args.type,
+      logo_url: args.logo_url,
+      socials: args.socials,
+      created_by: args.admin_user_id, // This can be undefined in development mode
+      is_featured: args.is_featured || false,
+      world_approved: args.world_approved || false,
+      status: args.status || "draft",
+    });
+  },
 }); 
