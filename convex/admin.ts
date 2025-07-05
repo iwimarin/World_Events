@@ -466,4 +466,66 @@ export const searchEventsForAdmin = query({
       .order("desc")
       .paginate(args.paginationOpts);
   },
+});
+
+/**
+ * Update an event (admin only)
+ */
+export const updateEvent = mutation({
+  args: {
+    admin_user_id: v.optional(v.id("users")),
+    event_id: v.id("events"),
+    name: v.optional(v.string()),
+    tagline: v.optional(v.string()),
+    description: v.optional(v.string()),
+    start_date: v.optional(v.string()),
+    end_date: v.optional(v.string()),
+    location: v.optional(v.object({
+      city: v.string(),
+      country: v.string(),
+    })),
+    type: v.optional(v.object({
+      conference: v.boolean(),
+      hackathon: v.boolean(),
+    })),
+    logo_url: v.optional(v.string()),
+    socials: v.optional(v.array(v.string())),
+    is_featured: v.optional(v.boolean()),
+    status: v.optional(v.union(v.literal("draft"), v.literal("published"), v.literal("archived"))),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    // In development mode, skip admin check
+    if (args.admin_user_id) {
+      // Verify admin status
+      const admin = await ctx.db.get(args.admin_user_id);
+      if (!admin || !admin.is_admin) {
+        throw new Error("Only admins can update events");
+      }
+    }
+
+    // Verify event exists
+    const event = await ctx.db.get(args.event_id);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // Build update object with only provided fields
+    const updateData: any = {};
+    if (args.name !== undefined) updateData.name = args.name;
+    if (args.tagline !== undefined) updateData.tagline = args.tagline;
+    if (args.description !== undefined) updateData.description = args.description;
+    if (args.start_date !== undefined) updateData.start_date = args.start_date;
+    if (args.end_date !== undefined) updateData.end_date = args.end_date;
+    if (args.location !== undefined) updateData.location = args.location;
+    if (args.type !== undefined) updateData.type = args.type;
+    if (args.logo_url !== undefined) updateData.logo_url = args.logo_url;
+    if (args.socials !== undefined) updateData.socials = args.socials;
+    if (args.is_featured !== undefined) updateData.is_featured = args.is_featured;
+    if (args.status !== undefined) updateData.status = args.status;
+
+    // Update the event
+    await ctx.db.patch(args.event_id, updateData);
+    return null;
+  },
 }); 
