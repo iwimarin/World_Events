@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
 import MiniKitProvider from "@/components/minikit-provider";
+import ConvexClientProvider from "@/components/convex-provider";
 import dynamic from "next/dynamic";
 import NextAuthProvider from "@/components/next-auth-provider";
 import "@worldcoin/mini-apps-ui-kit-react/styles.css";
@@ -36,11 +37,13 @@ export default function RootLayout({
       </head>
       <body className={sora.className}>
         <NextAuthProvider>
-          <ErudaProvider>
-            <MiniKitProvider>
-              {children}
-            </MiniKitProvider>
-          </ErudaProvider>
+          <ConvexClientProvider>
+            <ErudaProvider>
+              <MiniKitProvider>
+                {children}
+              </MiniKitProvider>
+            </ErudaProvider>
+          </ConvexClientProvider>
         </NextAuthProvider>
       </body>
     </html>

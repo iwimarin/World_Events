@@ -13,6 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as admin from "../admin.js";
+import type * as auth from "../auth.js";
+import type * as events from "../events.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -22,7 +25,11 @@ import type {
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
+  auth: typeof auth;
+  events: typeof events;
+}>;
 export declare const api: FilterApi<
   typeof fullApi,
   FunctionReference<any, "public">
