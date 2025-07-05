@@ -61,70 +61,36 @@ export default function AdminPage() {
     init();
   }, []);
 
-  // Queries - Skip in development mode since we don't have real authentication
+  // Auto-seed database if needed
+  const needsSeeding = useQuery(api.events.needsSeeding);
+  const seedDatabase = useMutation(api.events.seedSampleEvents);
+
+  useEffect(() => {
+    if (needsSeeding && isDevelopmentMode) {
+      seedDatabase().then((count) => {
+        if (count > 0) {
+          console.log(`Seeded ${count} sample events`);
+        }
+      });
+    }
+  }, [needsSeeding, isDevelopmentMode, seedDatabase]);
+
+  // Queries - Use real Convex data, pass undefined for admin_user_id in development mode
   const dashboardStats = useQuery(
     api.admin.getDashboardStats,
-    currentUserId ? { admin_user_id: currentUserId } : "skip"
+    isDevelopmentMode ? { admin_user_id: undefined } : (currentUserId ? { admin_user_id: currentUserId } : "skip")
   );
 
   const allEvents = useQuery(
     api.admin.getAllEventsForAdmin,
-    currentUserId ? { 
+    isDevelopmentMode ? { 
+      admin_user_id: undefined,
+      paginationOpts: { numItems: 50, cursor: null }
+    } : (currentUserId ? { 
       admin_user_id: currentUserId,
       paginationOpts: { numItems: 50, cursor: null }
-    } : "skip"
+    } : "skip")
   );
-
-  // Mock data for development mode
-  const mockDashboardStats = {
-    total_events: 12,
-    published_events: 8,
-    draft_events: 3,
-    archived_events: 1,
-    total_users: 156,
-    admin_users: 2,
-    recent_events: [],
-    recent_users: []
-  };
-
-  const mockEvents = [
-    {
-      _id: "mock-1" as Id<"events">,
-      _creationTime: Date.now(),
-      name: "ETH Global London",
-      tagline: "Build the future of Ethereum",
-      description: "A hackathon for Ethereum developers",
-      start_date: "2024-03-15T09:00:00Z",
-      end_date: "2024-03-17T18:00:00Z",
-      location: { city: "London", country: "United Kingdom" },
-      type: { conference: false, hackathon: true },
-      logo_url: "https://example.com/logo.png",
-      socials: ["https://twitter.com/ethglobal"],
-      created_by: "mock-user" as Id<"users">,
-      is_featured: true,
-      status: "published" as const
-    },
-    {
-      _id: "mock-2" as Id<"events">,
-      _creationTime: Date.now() - 86400000,
-      name: "Devcon Bangkok",
-      tagline: "The Ethereum conference",
-      description: "Annual Ethereum conference",
-      start_date: "2024-04-20T09:00:00Z",
-      end_date: "2024-04-23T18:00:00Z",
-      location: { city: "Bangkok", country: "Thailand" },
-      type: { conference: true, hackathon: false },
-      logo_url: "https://example.com/devcon.png",
-      socials: ["https://twitter.com/devcon"],
-      created_by: "mock-user" as Id<"users">,
-      is_featured: false,
-      status: "draft" as const
-    }
-  ];
-
-  // Use mock data in development mode, real data otherwise
-  const effectiveStats = isDevelopmentMode ? mockDashboardStats : dashboardStats;
-  const effectiveEvents = isDevelopmentMode ? { page: mockEvents } : allEvents;
 
   // Mutations
   const createEvent = useMutation(api.events.createEvent);
@@ -174,7 +140,7 @@ export default function AdminPage() {
   }
 
   // Filter events based on search and status
-  const filteredEvents = effectiveEvents?.page?.filter((event) => {
+  const filteredEvents = allEvents?.page?.filter((event) => {
     const matchesSearch = !searchTerm || 
       event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -284,7 +250,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-gray-600">Total Events</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {effectiveStats?.total_events || 0}
+                    {dashboardStats?.total_events || 0}
                   </p>
                 </div>
                 <Calendar className="h-8 w-8 text-blue-600" />
@@ -298,7 +264,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-gray-600">Published</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {effectiveStats?.published_events || 0}
+                    {dashboardStats?.published_events || 0}
                   </p>
                 </div>
                 <Eye className="h-8 w-8 text-green-600" />
@@ -312,7 +278,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-gray-600">Drafts</p>
                   <p className="text-2xl font-bold text-yellow-600">
-                    {effectiveStats?.draft_events || 0}
+                    {dashboardStats?.draft_events || 0}
                   </p>
                 </div>
                 <Archive className="h-8 w-8 text-yellow-600" />
@@ -326,7 +292,7 @@ export default function AdminPage() {
                 <div>
                   <p className="text-sm text-gray-600">Total Users</p>
                   <p className="text-2xl font-bold text-purple-600">
-                    {effectiveStats?.total_users || 0}
+                    {dashboardStats?.total_users || 0}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-purple-600" />

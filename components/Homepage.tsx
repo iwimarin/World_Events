@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import EventCard from "./EventCard";
 import FilterBar from "./FilterBar";
-import { sampleEvents } from "@/lib/sample-events";
 import { 
   Calendar, 
   MapPin, 
@@ -35,6 +36,26 @@ export default function Homepage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
 
+  // Load events from Convex
+  const eventsQuery = useQuery(api.events.listEvents, { 
+    paginationOpts: { numItems: 50, cursor: null } 
+  });
+  const featuredEventsQuery = useQuery(api.events.getFeaturedEvents);
+  
+  // Auto-seed database if needed
+  const needsSeeding = useQuery(api.events.needsSeeding);
+  const seedDatabase = useMutation(api.events.seedSampleEvents);
+
+  useEffect(() => {
+    if (needsSeeding) {
+      seedDatabase().then((count) => {
+        if (count > 0) {
+          console.log(`Seeded ${count} sample events`);
+        }
+      });
+    }
+  }, [needsSeeding, seedDatabase]);
+
   // Check if user is admin
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -54,9 +75,12 @@ export default function Homepage() {
     checkAdminStatus();
   }, []);
 
-  // Filter the sample events based on current filters
+  // Use real events data
+  const allEvents = eventsQuery?.page || [];
+
+  // Filter the events based on current filters
   const filteredEvents = useMemo(() => {
-    let filtered = [...sampleEvents];
+    let filtered = [...allEvents];
 
     // Search filter
     if (filters.search) {
@@ -93,7 +117,7 @@ export default function Homepage() {
     }
 
     return filtered;
-  }, [filters]);
+  }, [filters, allEvents]);
 
   const featuredEvents = filteredEvents.filter((event) => event.is_featured);
   const regularEvents = filteredEvents.filter((event) => !event.is_featured);
@@ -131,10 +155,10 @@ export default function Homepage() {
   };
 
   const stats = {
-    totalEvents: sampleEvents.length,
-    featuredEvents: sampleEvents.filter(e => e.is_featured).length,
-    countries: new Set(sampleEvents.map(e => e.location.country)).size,
-    upcomingEvents: sampleEvents.filter(e => new Date(e.start_date) > new Date()).length,
+    totalEvents: allEvents.length,
+    featuredEvents: allEvents.filter(e => e.is_featured).length,
+    countries: new Set(allEvents.map(e => e.location.country)).size,
+    upcomingEvents: allEvents.filter(e => new Date(e.start_date) > new Date()).length,
   };
 
   return (
