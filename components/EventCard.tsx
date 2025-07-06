@@ -51,7 +51,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
   // Check if event is bookmarked by current user
   const bookmarkStatus = useQuery(
     api.bookmarks.isEventBookmarked,
-    user && isAuthenticated ? {
+    user && isAuthenticated && user._id ? {
       user_id: user._id as Id<"users">,
       event_id: event._id as Id<"events">
     } : "skip"
@@ -81,7 +81,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
   }, [eventBookmarkCount]);
 
   const handleBookmarkToggle = async () => {
-    if (!user || !isAuthenticated) {
+    if (!user || !isAuthenticated || !user._id) {
       console.log("User must be authenticated to bookmark events");
       return;
     }
@@ -150,20 +150,9 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
               </p>
             </div>
           </div>
-          <div className="flex flex-col space-y-1">
-            {event.is_featured && (
-              <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
-                Featured
-              </Badge>
-            )}
-            {event.world_approved && (
-              <Badge variant="secondary" className="bg-gray-100 text-black border-gray-300">
-                <span className="mr-1">✓</span>
-                World Approved
-              </Badge>
-            )}
-            {/* Bookmark button */}
-            <div className="flex items-center space-x-2">
+          <div className="flex items-start space-x-2">
+            {/* Bookmark button - Always visible */}
+            <div className="flex items-center space-x-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -171,9 +160,9 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
                   isBookmarked ? 'text-blue-600' : 'text-gray-400'
                 }`}
                 onClick={handleBookmarkToggle}
-                disabled={!user || !isAuthenticated}
+                disabled={!user || !isAuthenticated || !user._id}
                 title={
-                  !user || !isAuthenticated
+                  !user || !isAuthenticated || !user._id
                     ? "Login to bookmark events"
                     : isBookmarked
                     ? "Remove bookmark"
@@ -190,6 +179,20 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
                 <span className="text-xs text-gray-500">
                   {bookmarkCount}
                 </span>
+              )}
+            </div>
+            {/* Badges column */}
+            <div className="flex flex-col space-y-1">
+              {event.is_featured && (
+                <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+                  Featured
+                </Badge>
+              )}
+              {event.world_approved && (
+                <Badge variant="secondary" className="bg-gray-100 text-black border-gray-300">
+                  <span className="mr-1">✓</span>
+                  World Approved
+                </Badge>
               )}
             </div>
           </div>

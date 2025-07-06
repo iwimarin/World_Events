@@ -35,7 +35,7 @@ export default function BookmarksTab({ user, isAuthenticated }: BookmarksTabProp
   // Get user's bookmarked events
   const bookmarkedEventsQuery = useQuery(
     api.bookmarks.getUserBookmarks,
-    user && isAuthenticated ? {
+    user && isAuthenticated && user._id ? {
       user_id: user._id as Id<"users">,
       paginationOpts: { numItems: 50, cursor: null }
     } : "skip"
@@ -140,7 +140,7 @@ export default function BookmarksTab({ user, isAuthenticated }: BookmarksTabProp
       {/* Bookmarked Events */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Show authentication required message */}
-        {(!user || !isAuthenticated) && (
+        {(!user || !isAuthenticated || !user._id) && (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -167,7 +167,7 @@ export default function BookmarksTab({ user, isAuthenticated }: BookmarksTabProp
         )}
 
         {/* Show bookmarked events */}
-        {user && isAuthenticated && (
+        {user && isAuthenticated && user._id && (
           <>
             {filteredEvents.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
