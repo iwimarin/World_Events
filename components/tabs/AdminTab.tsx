@@ -536,11 +536,11 @@ export default function AdminTab({ user, isAuthenticated }: AdminTabProps) {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-purple-600">
+                    <p className="text-2xl font-bold text-[#3FDBED]">
                       {dashboardStats?.total_users || 0}
                     </p>
                   </div>
-                  <Users className="h-8 w-8 text-purple-600" />
+                  <Users className="h-8 w-8 text-[#3FDBED]" />
                 </div>
               </CardContent>
             </Card>

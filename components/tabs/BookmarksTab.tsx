@@ -58,11 +58,11 @@ export default function BookmarksTab() {
   });
 
   return (
-    <div className="pb-20 min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
+    <div className="pb-20 min-h-screen bg-gradient-to-br from-[#D9F8FB] via-white to-blue-50">
       {/* Header */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] rounded-full flex items-center justify-center">
             <Bookmark className="h-8 w-8 text-white" />
           </div>
         </div>
@@ -76,7 +76,7 @@ export default function BookmarksTab() {
         </p>
         
         <div className="flex items-center justify-center space-x-4">
-          <Badge className="bg-purple-100 text-purple-800 border-purple-200 px-4 py-2">
+          <Badge className="bg-[#D9F8FB] text-[#3FDBED] border-[#66E2F1] px-4 py-2">
             <Heart className="h-4 w-4 mr-1" />
             {bookmarkedEvents.length} Saved
           </Badge>
@@ -95,7 +95,7 @@ export default function BookmarksTab() {
               onClick={() => setFilter('all')}
               className={`px-6 py-2 rounded-full transition-all duration-200 ${
                 filter === 'all' 
-                  ? 'bg-purple-600 text-white shadow-lg' 
+                  ? 'bg-[#3FDBED] text-white shadow-lg' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -105,7 +105,7 @@ export default function BookmarksTab() {
               onClick={() => setFilter('upcoming')}
               className={`px-6 py-2 rounded-full transition-all duration-200 ${
                 filter === 'upcoming' 
-                  ? 'bg-purple-600 text-white shadow-lg' 
+                  ? 'bg-[#3FDBED] text-white shadow-lg' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -115,7 +115,7 @@ export default function BookmarksTab() {
               onClick={() => setFilter('past')}
               className={`px-6 py-2 rounded-full transition-all duration-200 ${
                 filter === 'past' 
-                  ? 'bg-purple-600 text-white shadow-lg' 
+                  ? 'bg-[#3FDBED] text-white shadow-lg' 
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -134,7 +134,7 @@ export default function BookmarksTab() {
                 <div className="md:flex">
                   {/* Event Image */}
                   <div className="md:w-1/3">
-                    <div className="h-48 md:h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                    <div className="h-48 md:h-full bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] flex items-center justify-center">
                       <Calendar className="h-16 w-16 text-white" />
                     </div>
                   </div>
@@ -144,7 +144,7 @@ export default function BookmarksTab() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center space-x-2 mb-2">
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                          <Badge className="bg-[#D9F8FB] text-[#3FDBED] border-[#66E2F1]">
                             {event.type}
                           </Badge>
                           {event.isUpcoming && (
@@ -209,7 +209,7 @@ export default function BookmarksTab() {
                   // TODO: Navigate to events tab
                   console.log("Navigate to events tab");
                 }}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-[#3FDBED] hover:bg-[#66E2F1]"
               >
                 <Search className="h-4 w-4 mr-2" />
                 Explore Events

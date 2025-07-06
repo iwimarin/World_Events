@@ -238,10 +238,10 @@ export default function EventsTab() {
           <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Star className="h-6 w-6 mr-2 text-purple-600" />
-                  Featured Events
-                </h2>
+                              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                <Star className="h-6 w-6 mr-2 text-[#3FDBED]" />
+                Featured Events
+              </h2>
                 <p className="text-gray-600 mt-1">
                   Hand-picked events you shouldn't miss
                 </p>
@@ -312,7 +312,7 @@ export default function EventsTab() {
       </div>
 
       {/* Footer CTA */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 mt-16">
+      <div className="bg-gradient-to-r from-[#66E2F1] to-[#3FDBED] mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
             <h3 className="text-2xl font-bold text-white mb-4">

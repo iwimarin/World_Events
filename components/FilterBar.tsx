@@ -209,12 +209,12 @@ export default function FilterBar({
             </Badge>
           )}
           {activeFilters.location && (
-            <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                          <Badge variant="secondary" className="bg-[#D9F8FB] text-[#3FDBED]">
               Location: {activeFilters.location}
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 ml-1 hover:bg-purple-200"
+                className="h-4 w-4 p-0 ml-1 hover:bg-[#D9F8FB]"
                 onClick={() => onFilterByLocation("")}
               >
                 <X className="h-3 w-3" />

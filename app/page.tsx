@@ -31,7 +31,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 lg:p-12 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 lg:p-12 bg-gradient-to-br from-blue-50 via-white to-[#D9F8FB]">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
           <p className="text-lg font-medium text-gray-900">Loading Web3 Events...</p>

@@ -129,7 +129,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
   return (
     <Card className={`group hover:shadow-lg transition-all duration-300 border-l-4 ${
       event.is_featured 
-        ? "border-l-purple-500 bg-gradient-to-br from-purple-50 to-indigo-50" 
+        ? "border-l-[#3FDBED] bg-gradient-to-br from-[#D9F8FB] to-blue-50" 
         : "border-l-blue-500 hover:border-l-blue-600"
     } ${featured ? "md:col-span-2" : ""}`}>
       <CardHeader className="pb-3">
@@ -137,7 +137,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
           <div className="flex items-start space-x-3">
             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
               <AvatarImage src={event.logo_url} alt={event.name} />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+              <AvatarFallback className="bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] text-white font-semibold">
                 {event.name.substring(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -184,7 +184,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
             {/* Badges column */}
             <div className="flex flex-col space-y-1">
               {event.is_featured && (
-                <Badge variant="secondary" className="bg-purple-100 text-purple-800 border-purple-200">
+                <Badge variant="secondary" className="bg-[#D9F8FB] text-[#3FDBED] border-[#66E2F1]">
                   Featured
                 </Badge>
               )}
@@ -259,7 +259,7 @@ export default function EventCard({ event, featured = false, user, isAuthenticat
 
       <CardFooter className="pt-0">
         <Button 
-          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                      className="w-full bg-gradient-to-r from-[#66E2F1] to-[#3FDBED] hover:from-[#3FDBED] hover:to-[#66E2F1] text-white"
           onClick={() => {
             // TODO: Navigate to event detail page
             console.log("Navigate to event:", event._id);

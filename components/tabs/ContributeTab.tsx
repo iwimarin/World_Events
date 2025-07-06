@@ -51,9 +51,9 @@ export default function ContributeTab() {
           </div>
           
           <div className="text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Calendar className="h-6 w-6 text-purple-600" />
-            </div>
+                    <div className="w-12 h-12 bg-[#D9F8FB] rounded-full flex items-center justify-center mx-auto mb-4">
+          <Calendar className="h-6 w-6 text-[#3FDBED]" />
+        </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Easy Submission</h3>
             <p className="text-gray-600">
               Simple form to submit your event details and get featured quickly
@@ -78,7 +78,7 @@ export default function ContributeTab() {
           {/* Submit New Event */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Plus className="h-8 w-8 text-white" />
               </div>
               
@@ -92,7 +92,7 @@ export default function ContributeTab() {
               
               <Button 
                 size="lg" 
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
+                className="w-full bg-gradient-to-r from-[#66E2F1] to-[#3FDBED] hover:from-[#3FDBED] hover:to-[#66E2F1] text-white"
                 onClick={() => {
                   // TODO: Navigate to event submission form
                   console.log("Navigate to event submission form");

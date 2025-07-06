@@ -60,7 +60,7 @@ export default function Homepage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-[#D9F8FB]">
       {/* Tab Content */}
       <div className="min-h-screen">
         {renderCurrentTab()}

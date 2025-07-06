@@ -150,7 +150,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   // Loading state
   if (loading || miniKitLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-[#D9F8FB] flex items-center justify-center">
         <div className="flex flex-col items-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
           <p className="text-gray-600">
@@ -168,7 +168,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   // Show login screen
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-[#D9F8FB] relative overflow-hidden">
       {/* Background Grid Pattern */}
       <GridPattern
         squares={[
@@ -211,7 +211,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           {/* Header */}
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] rounded-full flex items-center justify-center">
                 <Globe className="h-8 w-8 text-white" />
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
             <div className="text-center space-y-6">
               <div className="flex justify-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#66E2F1] to-[#3FDBED] rounded-full flex items-center justify-center">
                   <Lock className="h-6 w-6 text-white" />
                 </div>
               </div>
@@ -287,7 +287,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
                   <Button 
                     onClick={handleLogin}
                     disabled={authenticating}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                    className="w-full bg-gradient-to-r from-[#66E2F1] to-[#3FDBED] hover:from-[#3FDBED] hover:to-[#66E2F1] text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
                   >
                     {authenticating ? (
                       <>
@@ -322,8 +322,8 @@ export default function AuthGuard({ children }: AuthGuardProps) {
             
             <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-white/20">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Shield className="h-4 w-4 text-purple-600" />
+                <div className="w-8 h-8 bg-[#D9F8FB] rounded-full flex items-center justify-center">
+                  <Shield className="h-4 w-4 text-[#3FDBED]" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900 text-sm">Secure & Private</p>
