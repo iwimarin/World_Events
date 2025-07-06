@@ -973,7 +973,7 @@ function EditEventForm({ event, onSubmit, onCancel }: {
         >
           Cancel
         </Button>
-        <Button
+        <Button 
           type="submit"
           className="bg-blue-600 hover:bg-blue-700"
         >

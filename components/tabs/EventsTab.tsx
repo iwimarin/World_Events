@@ -20,18 +20,7 @@ import {
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
 
-interface EventsTabProps {
-  user?: {
-    _id: string;
-    wallet_address: string;
-    username?: string;
-    profile_picture_url?: string;
-    is_admin?: boolean;
-  };
-  isAuthenticated?: boolean;
-}
-
-export default function EventsTab({ user, isAuthenticated }: EventsTabProps = {}) {
+export default function EventsTab() {
   const [filters, setFilters] = useState({
     search: "",
     type: "",
@@ -158,6 +147,19 @@ export default function EventsTab({ user, isAuthenticated }: EventsTabProps = {}
             [3, 12],
             [18, 8],
           ]}
+          coloredSquares={[
+            [1, 1, "#D9F8FB"],
+            [7, 2, "#66E2F1"],
+            [2, 5, "#D9F8FB"],
+            [9, 1, "#66E2F1"],
+            [12, 3, "#D9F8FB"],
+            [15, 5, "#66E2F1"],
+            [4, 9, "#D9F8FB"],
+            [17, 7, "#66E2F1"],
+            [6, 11, "#D9F8FB"],
+            [19, 4, "#66E2F1"],
+            [21, 8, "#D9F8FB"],
+          ]}
           className={cn(
             "[mask-image:radial-gradient(400px_circle_at_center,white,transparent)]",
             "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12",
@@ -251,13 +253,7 @@ export default function EventsTab({ user, isAuthenticated }: EventsTabProps = {}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredEvents.map((event) => (
-                <EventCard 
-                  key={event._id} 
-                  event={event} 
-                  featured 
-                  user={user} 
-                  isAuthenticated={isAuthenticated} 
-                />
+                <EventCard key={event._id} event={event} featured />
               ))}
             </div>
           </section>
@@ -281,12 +277,7 @@ export default function EventsTab({ user, isAuthenticated }: EventsTabProps = {}
           {filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event) => (
-                <EventCard 
-                  key={event._id} 
-                  event={event} 
-                  user={user} 
-                  isAuthenticated={isAuthenticated} 
-                />
+                <EventCard key={event._id} event={event} />
               ))}
             </div>
           ) : (

@@ -8,6 +8,7 @@ interface GridPatternProps {
   x?: number;
   y?: number;
   squares?: Array<[x: number, y: number]>;
+  coloredSquares?: Array<[x: number, y: number, color: string]>;
   strokeDasharray?: string;
   className?: string;
   [key: string]: unknown;
@@ -20,6 +21,7 @@ function GridPattern({
   y = -1,
   strokeDasharray = "0",
   squares,
+  coloredSquares,
   className,
   ...props
 }: GridPatternProps) {
@@ -61,6 +63,23 @@ function GridPattern({
               height={height - 1}
               x={x * width + 1}
               y={y * height + 1}
+              className="fill-gray-400/20"
+            />
+          ))}
+        </svg>
+      )}
+      {coloredSquares && (
+        <svg x={x} y={y} className="overflow-visible">
+          {coloredSquares.map(([x, y, color]) => (
+            <rect
+              strokeWidth="0"
+              key={`colored-${x}-${y}`}
+              width={width - 1}
+              height={height - 1}
+              x={x * width + 1}
+              y={y * height + 1}
+              fill={color}
+              className="opacity-80"
             />
           ))}
         </svg>

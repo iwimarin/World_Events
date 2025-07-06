@@ -185,6 +185,18 @@ export default function AuthGuard({ children }: AuthGuardProps) {
           [3, 12],
           [18, 8],
         ]}
+        coloredSquares={[
+          [2, 2, "#D9F8FB"],
+          [6, 1, "#66E2F1"],
+          [3, 4, "#D9F8FB"],
+          [8, 3, "#66E2F1"],
+          [11, 2, "#D9F8FB"],
+          [14, 4, "#66E2F1"],
+          [1, 8, "#D9F8FB"],
+          [16, 6, "#66E2F1"],
+          [9, 12, "#D9F8FB"],
+          [13, 8, "#66E2F1"],
+        ]}
         className={cn(
           "[mask-image:radial-gradient(600px_circle_at_center,white,transparent)]",
           "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12",
