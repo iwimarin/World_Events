@@ -50,13 +50,8 @@ export default function BottomNavigation({ currentTab, onTabChange, isAdmin = fa
   ];
 
   const handleTabClick = (itemId: string) => {
-    if (itemId === "admin") {
-      // Directly navigate to admin page
-      window.location.href = '/admin';
-    } else {
-      // Normal tab switching
-      onTabChange(itemId);
-    }
+    // All tabs now use the same navigation pattern
+    onTabChange(itemId);
   };
 
   return (

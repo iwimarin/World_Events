@@ -6,6 +6,7 @@ import EventsTab from "./tabs/EventsTab";
 import ContributeTab from "./tabs/ContributeTab";
 import BookmarksTab from "./tabs/BookmarksTab";
 import ProfileTab from "./tabs/ProfileTab";
+import AdminTab from "./tabs/AdminTab";
 
 export default function Homepage() {
   const [currentTab, setCurrentTab] = useState("events");
@@ -47,6 +48,8 @@ export default function Homepage() {
         return <BookmarksTab />;
       case "profile":
         return <ProfileTab />;
+      case "admin":
+        return <AdminTab />;
       default:
         return <EventsTab />;
     }
