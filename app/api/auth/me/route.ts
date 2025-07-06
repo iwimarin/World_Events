@@ -26,6 +26,7 @@ async function getUserByWallet(walletAddress: string) {
             walletAddress: user.wallet_address,
             username: user.username,
             profilePictureUrl: user.profile_picture_url,
+            isAdmin: user.is_admin || false,
             isNewUser: false
         };
     } catch (error) {

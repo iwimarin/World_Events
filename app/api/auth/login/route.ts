@@ -30,6 +30,7 @@ async function findOrCreateUser(walletAddress: string, payload: MiniAppWalletAut
 			walletAddress: existingUser.wallet_address,
 			username: existingUser.username,
 			profilePictureUrl: existingUser.profile_picture_url,
+			isAdmin: existingUser.is_admin || false,
 			isNewUser: false
 		};
 	}
@@ -60,6 +61,7 @@ async function findOrCreateUser(walletAddress: string, payload: MiniAppWalletAut
 		walletAddress: newUser.wallet_address,
 		username: newUser.username,
 		profilePictureUrl: newUser.profile_picture_url,
+		isAdmin: newUser.is_admin || false,
 		isNewUser: true
 	};
 }
@@ -114,6 +116,7 @@ export const POST = async (req: NextRequest) => {
 				walletAddress: user.walletAddress,
 				username: user.username,
 				profilePictureUrl: user.profilePictureUrl,
+				isAdmin: user.isAdmin,
 				isNewUser: user.isNewUser
 			}
 		})

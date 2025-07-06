@@ -20,7 +20,8 @@ import {
   Settings,
   Shield,
   LogOut,
-  User
+  User,
+  UserCog
 } from "lucide-react";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
@@ -72,10 +73,8 @@ export default function Homepage() {
           const data = await response.json();
           if (data.authenticated && data.user) {
             setUser(data.user);
-            // Check if user is admin
-            // In production, this would check the user's wallet address and query the database
-            const isAdminUser = localStorage.getItem('isAdmin') === 'true';
-            setIsAdmin(isAdminUser);
+            // Check if user is admin from real database data
+            setIsAdmin(data.user.isAdmin || false);
           }
         }
       } catch (error) {
@@ -160,12 +159,8 @@ export default function Homepage() {
     });
   };
 
-  // Development helper - toggle admin status for testing
-  const toggleAdminStatus = () => {
-    const newAdminStatus = !isAdmin;
-    setIsAdmin(newAdminStatus);
-    localStorage.setItem('isAdmin', newAdminStatus.toString());
-  };
+  // Note: Admin status is now determined by the is_admin field in the Convex database
+  // To make a user an admin, update their record in the database directly
 
   // Logout function
   const handleLogout = async () => {
@@ -236,20 +231,39 @@ export default function Homepage() {
                   <span className="text-sm font-medium text-gray-900">
                     {user.username || `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`}
                   </span>
-                </div>
-                <Button
-                  onClick={handleLogout}
-                  disabled={isLoggingOut}
-                  variant="outline"
-                  size="sm"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  {isLoggingOut ? (
-                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <LogOut className="h-4 w-4" />
+                  {isAdmin && (
+                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 px-2 py-1 text-xs">
+                      Admin
+                    </Badge>
                   )}
-                </Button>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {isAdmin && (
+                    <Button
+                      onClick={() => {
+                        window.location.href = '/admin';
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-purple-600 hover:text-purple-900 border-purple-200 hover:border-purple-300"
+                    >
+                      <UserCog className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    variant="outline"
+                    size="sm"
+                    className="text-gray-600 hover:text-gray-900"
+                  >
+                    {isLoggingOut ? (
+                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <LogOut className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -423,33 +437,7 @@ export default function Homepage() {
         </div>
       </div>
 
-      {/* Admin Panel Link */}
-      {isAdmin && (
-        <div className="bg-gray-900 border-t border-gray-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Shield className="h-5 w-5 text-yellow-400" />
-                <span className="text-white font-medium">Admin Panel</span>
-                <Badge className="bg-yellow-500 text-black">
-                  Administrator
-                </Badge>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-gray-800 text-white border-gray-700 hover:bg-gray-700"
-                onClick={() => {
-                  window.location.href = '/admin';
-                }}
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Manage Events
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 } 
