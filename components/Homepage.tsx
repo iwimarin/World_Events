@@ -12,6 +12,8 @@ export default function Homepage() {
   const [currentTab, setCurrentTab] = useState("events");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   // Check if user is admin
   useEffect(() => {
@@ -21,6 +23,8 @@ export default function Homepage() {
         if (response.ok) {
           const data = await response.json();
           if (data.authenticated && data.user) {
+            setIsAuthenticated(true);
+            setUser(data.user);
             setIsAdmin(data.user.isAdmin || false);
           }
         }
@@ -41,17 +45,17 @@ export default function Homepage() {
   const renderCurrentTab = () => {
     switch (currentTab) {
       case "events":
-        return <EventsTab />;
+        return <EventsTab user={user} isAuthenticated={isAuthenticated} />;
       case "contribute":
         return <ContributeTab />;
       case "bookmarks":
-        return <BookmarksTab />;
+        return <BookmarksTab user={user} isAuthenticated={isAuthenticated} />;
       case "profile":
         return <ProfileTab />;
       case "admin":
-        return <AdminTab />;
+        return <AdminTab user={user} isAuthenticated={isAuthenticated} />;
       default:
-        return <EventsTab />;
+        return <EventsTab user={user} isAuthenticated={isAuthenticated} />;
     }
   };
 

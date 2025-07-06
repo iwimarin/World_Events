@@ -4,7 +4,11 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CalendarDays, MapPin, Users, ExternalLink, Twitter, Github } from "lucide-react";
+import { CalendarDays, MapPin, Users, ExternalLink, Twitter, Github, Bookmark, BookmarkCheck } from "lucide-react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 interface EventCardProps {
@@ -30,9 +34,72 @@ interface EventCardProps {
     status?: "draft" | "published" | "archived";
   };
   featured?: boolean;
+  user?: {
+    _id: string;
+    wallet_address: string;
+    username?: string;
+    profile_picture_url?: string;
+    is_admin?: boolean;
+  };
+  isAuthenticated?: boolean;
 }
 
-export default function EventCard({ event, featured = false }: EventCardProps) {
+export default function EventCard({ event, featured = false, user, isAuthenticated }: EventCardProps) {
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkCount, setBookmarkCount] = useState(0);
+
+  // Check if event is bookmarked by current user
+  const bookmarkStatus = useQuery(
+    api.bookmarks.isEventBookmarked,
+    user && isAuthenticated ? {
+      user_id: user._id as Id<"users">,
+      event_id: event._id as Id<"events">
+    } : "skip"
+  );
+
+  // Get bookmark count for this event
+  const eventBookmarkCount = useQuery(
+    api.bookmarks.getEventBookmarkCount,
+    { event_id: event._id as Id<"events"> }
+  );
+
+  // Toggle bookmark mutation
+  const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
+
+  // Update local state when bookmark status changes
+  useEffect(() => {
+    if (bookmarkStatus) {
+      setIsBookmarked(bookmarkStatus.is_bookmarked);
+    }
+  }, [bookmarkStatus]);
+
+  // Update bookmark count when it changes
+  useEffect(() => {
+    if (eventBookmarkCount !== undefined) {
+      setBookmarkCount(eventBookmarkCount);
+    }
+  }, [eventBookmarkCount]);
+
+  const handleBookmarkToggle = async () => {
+    if (!user || !isAuthenticated) {
+      console.log("User must be authenticated to bookmark events");
+      return;
+    }
+
+    try {
+      const result = await toggleBookmark({
+        user_id: user._id as Id<"users">,
+        event_id: event._id as Id<"events">
+      });
+      
+      setIsBookmarked(result.is_bookmarked);
+      // Update bookmark count optimistically
+      setBookmarkCount(prev => result.is_bookmarked ? prev + 1 : prev - 1);
+    } catch (error) {
+      console.error("Error toggling bookmark:", error);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -95,6 +162,36 @@ export default function EventCard({ event, featured = false }: EventCardProps) {
                 World Approved
               </Badge>
             )}
+            {/* Bookmark button */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 w-8 p-0 hover:bg-blue-100 ${
+                  isBookmarked ? 'text-blue-600' : 'text-gray-400'
+                }`}
+                onClick={handleBookmarkToggle}
+                disabled={!user || !isAuthenticated}
+                title={
+                  !user || !isAuthenticated
+                    ? "Login to bookmark events"
+                    : isBookmarked
+                    ? "Remove bookmark"
+                    : "Bookmark this event"
+                }
+              >
+                {isBookmarked ? (
+                  <BookmarkCheck className="h-4 w-4" />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+              </Button>
+              {bookmarkCount > 0 && (
+                <span className="text-xs text-gray-500">
+                  {bookmarkCount}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </CardHeader>

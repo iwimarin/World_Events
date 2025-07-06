@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
+import type * as bookmarks from "../bookmarks.js";
 import type * as events from "../events.js";
 
 /**
@@ -28,6 +29,7 @@ import type * as events from "../events.js";
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   auth: typeof auth;
+  bookmarks: typeof bookmarks;
   events: typeof events;
 }>;
 export declare const api: FilterApi<

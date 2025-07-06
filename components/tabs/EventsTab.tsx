@@ -20,7 +20,18 @@ import {
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
 
-export default function EventsTab() {
+interface EventsTabProps {
+  user?: {
+    _id: string;
+    wallet_address: string;
+    username?: string;
+    profile_picture_url?: string;
+    is_admin?: boolean;
+  };
+  isAuthenticated?: boolean;
+}
+
+export default function EventsTab({ user, isAuthenticated }: EventsTabProps = {}) {
   const [filters, setFilters] = useState({
     search: "",
     type: "",
@@ -240,7 +251,13 @@ export default function EventsTab() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {featuredEvents.map((event) => (
-                <EventCard key={event._id} event={event} featured />
+                <EventCard 
+                  key={event._id} 
+                  event={event} 
+                  featured 
+                  user={user} 
+                  isAuthenticated={isAuthenticated} 
+                />
               ))}
             </div>
           </section>
@@ -264,7 +281,12 @@ export default function EventsTab() {
           {filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredEvents.map((event) => (
-                <EventCard key={event._id} event={event} />
+                <EventCard 
+                  key={event._id} 
+                  event={event} 
+                  user={user} 
+                  isAuthenticated={isAuthenticated} 
+                />
               ))}
             </div>
           ) : (

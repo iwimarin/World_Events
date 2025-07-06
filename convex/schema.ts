@@ -60,4 +60,13 @@ export default defineSchema({
     .index("by_user_id", ["user_id"])
     .index("by_session_token", ["session_token"])
     .index("by_expires_at", ["expires_at"]),
+
+  // Bookmarks table for user event bookmarks
+  bookmarks: defineTable({
+    user_id: v.id("users"),
+    event_id: v.id("events"),
+  })
+    .index("by_user_id", ["user_id"])
+    .index("by_event_id", ["event_id"])
+    .index("by_user_and_event", ["user_id", "event_id"]),
 }); 

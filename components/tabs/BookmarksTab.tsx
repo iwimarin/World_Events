@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import EventCard from "../EventCard";
 import { 
   Bookmark,
   Calendar,
@@ -14,48 +18,56 @@ import {
   ArrowRight
 } from "lucide-react";
 
-export default function BookmarksTab() {
+interface BookmarksTabProps {
+  user?: {
+    _id: string;
+    wallet_address: string;
+    username?: string;
+    profile_picture_url?: string;
+    is_admin?: boolean;
+  };
+  isAuthenticated?: boolean;
+}
+
+export default function BookmarksTab({ user, isAuthenticated }: BookmarksTabProps) {
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
 
-  // Mock bookmarked events data
-  const bookmarkedEvents = [
-    {
-      id: 1,
-      name: "DevConnect Istanbul 2024",
-      date: "2024-11-15",
-      location: "Istanbul, Turkey",
-      type: "Conference",
-      image: "/api/placeholder/300/200",
-      saved: true,
-      isUpcoming: true
-    },
-    {
-      id: 2,
-      name: "ETHGlobal Bangkok",
-      date: "2024-12-01",
-      location: "Bangkok, Thailand", 
-      type: "Hackathon",
-      image: "/api/placeholder/300/200",
-      saved: true,
-      isUpcoming: true
-    },
-    {
-      id: 3,
-      name: "Consensus 2024",
-      date: "2024-05-29",
-      location: "Austin, Texas",
-      type: "Conference",
-      image: "/api/placeholder/300/200",
-      saved: true,
-      isUpcoming: false
-    }
-  ];
+  // Get user's bookmarked events
+  const bookmarkedEventsQuery = useQuery(
+    api.bookmarks.getUserBookmarks,
+    user && isAuthenticated ? {
+      user_id: user._id as Id<"users">,
+      paginationOpts: { numItems: 50, cursor: null }
+    } : "skip"
+  );
 
-  const filteredEvents = bookmarkedEvents.filter(event => {
-    if (filter === 'upcoming') return event.isUpcoming;
-    if (filter === 'past') return !event.isUpcoming;
-    return true;
-  });
+  const bookmarkedEvents = bookmarkedEventsQuery?.page || [];
+
+  // Filter events based on date
+  const filteredEvents = useMemo(() => {
+    return bookmarkedEvents.filter(event => {
+      const eventDate = new Date(event.start_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (filter === 'upcoming') return eventDate >= today;
+      if (filter === 'past') return eventDate < today;
+      return true;
+    });
+  }, [bookmarkedEvents, filter]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const total = bookmarkedEvents.length;
+    const upcoming = bookmarkedEvents.filter(event => {
+      const eventDate = new Date(event.start_date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return eventDate >= today;
+    }).length;
+    
+    return { total, upcoming, past: total - upcoming };
+  }, [bookmarkedEvents]);
 
   return (
     <div className="pb-20 min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
@@ -78,11 +90,11 @@ export default function BookmarksTab() {
         <div className="flex items-center justify-center space-x-4">
           <Badge className="bg-purple-100 text-purple-800 border-purple-200 px-4 py-2">
             <Heart className="h-4 w-4 mr-1" />
-            {bookmarkedEvents.length} Saved
+            {stats.total} Saved
           </Badge>
           <Badge className="bg-blue-100 text-blue-800 border-blue-200 px-4 py-2">
             <Calendar className="h-4 w-4 mr-1" />
-            {bookmarkedEvents.filter(e => e.isUpcoming).length} Upcoming
+            {stats.upcoming} Upcoming
           </Badge>
         </div>
       </div>
@@ -99,7 +111,7 @@ export default function BookmarksTab() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              All ({bookmarkedEvents.length})
+              All ({stats.total})
             </button>
             <button
               onClick={() => setFilter('upcoming')}
@@ -109,7 +121,7 @@ export default function BookmarksTab() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Upcoming ({bookmarkedEvents.filter(e => e.isUpcoming).length})
+              Upcoming ({stats.upcoming})
             </button>
             <button
               onClick={() => setFilter('past')}
@@ -119,103 +131,81 @@ export default function BookmarksTab() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Past ({bookmarkedEvents.filter(e => !e.isUpcoming).length})
+              Past ({stats.past})
             </button>
           </div>
         </div>
       </div>
 
       {/* Bookmarked Events */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {filteredEvents.length > 0 ? (
-          <div className="space-y-6">
-            {filteredEvents.map((event) => (
-              <div key={event.id} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden">
-                <div className="md:flex">
-                  {/* Event Image */}
-                  <div className="md:w-1/3">
-                    <div className="h-48 md:h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                      <Calendar className="h-16 w-16 text-white" />
-                    </div>
-                  </div>
-                  
-                  {/* Event Details */}
-                  <div className="md:w-2/3 p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                            {event.type}
-                          </Badge>
-                          {event.isUpcoming && (
-                            <Badge className="bg-green-100 text-green-800 border-green-200">
-                              Upcoming
-                            </Badge>
-                          )}
-                        </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                          {event.name}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-gray-600">
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="h-4 w-4" />
-                            <span>{new Date(event.date).toLocaleDateString()}</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>{event.location}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-800">
-                          <Bookmark className="h-4 w-4 fill-current" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-500">
-                        Saved {Math.floor(Math.random() * 30) + 1} days ago
-                      </div>
-                      <Button variant="outline" size="sm">
-                        View Details
-                        <ArrowRight className="h-4 w-4 ml-1" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Show authentication required message */}
+        {(!user || !isAuthenticated) && (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
                 <Bookmark className="h-12 w-12 text-gray-400" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No bookmarks yet
+                Authentication Required
               </h3>
               <p className="text-gray-600 mb-6">
-                Start exploring events and save the ones you're interested in
+                Please log in to view your bookmarked events
               </p>
               <Button 
                 onClick={() => {
-                  // TODO: Navigate to events tab
-                  console.log("Navigate to events tab");
+                  // TODO: Navigate to login
+                  console.log("Navigate to login");
                 }}
                 className="bg-purple-600 hover:bg-purple-700"
               >
-                <Search className="h-4 w-4 mr-2" />
-                Explore Events
+                <Heart className="h-4 w-4 mr-2" />
+                Login to Continue
               </Button>
             </div>
           </div>
+        )}
+
+        {/* Show bookmarked events */}
+        {user && isAuthenticated && (
+          <>
+            {filteredEvents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredEvents.map((event) => (
+                  <EventCard 
+                    key={event._id} 
+                    event={event} 
+                    user={user} 
+                    isAuthenticated={isAuthenticated} 
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="max-w-md mx-auto">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Bookmark className="h-12 w-12 text-gray-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    No bookmarks yet
+                  </h3>
+                  <p className="text-gray-600 mb-6">
+                    Start exploring events and save the ones you're interested in
+                  </p>
+                  <Button 
+                    onClick={() => {
+                      // TODO: Navigate to events tab
+                      console.log("Navigate to events tab");
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Search className="h-4 w-4 mr-2" />
+                    Explore Events
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 

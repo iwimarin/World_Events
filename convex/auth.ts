@@ -369,4 +369,52 @@ export const getAllUsers = query({
 
     return await ctx.db.query("users").collect();
   },
+});
+
+/**
+ * Bootstrap the first admin user (only works if there are no existing admins)
+ */
+export const bootstrapFirstAdmin = mutation({
+  args: {
+    wallet_address: v.string(),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    // Check if there are any existing admins
+    const existingAdmins = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("is_admin"), true))
+      .collect();
+
+    if (existingAdmins.length > 0) {
+      return {
+        success: false,
+        message: "Cannot bootstrap: Admin users already exist. Use setUserAdmin instead.",
+      };
+    }
+
+    // Find the user by wallet address
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("wallet_address"), args.wallet_address))
+      .unique();
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found. Please authenticate first.",
+      };
+    }
+
+    // Set the user as admin
+    await ctx.db.patch(user._id, { is_admin: true });
+
+    return {
+      success: true,
+      message: "Successfully set as first admin user!",
+    };
+  },
 }); 

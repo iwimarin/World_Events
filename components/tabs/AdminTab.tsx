@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -21,8 +21,13 @@ import {
   TrendingUp,
   Eye,
   Archive,
-  Settings
+  Settings,
+  Shield,
+  Crown
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { CheckCircle, XCircle, BarChart3, Clock, User } from "lucide-react";
 
 // List of countries for the dropdown
 const COUNTRIES = [
@@ -53,7 +58,116 @@ const COUNTRIES = [
   "Vietnam", "Yemen", "Zambia", "Zimbabwe"
 ];
 
-export default function AdminTab() {
+// Define the User type based on the API response
+interface User {
+  id: Id<"users">;
+  walletAddress: string;
+  username?: string;
+  profilePictureUrl?: string;
+  isAdmin: boolean;
+  isNewUser: boolean;
+}
+
+interface AdminTabProps {
+  user?: User;
+  isAuthenticated: boolean;
+}
+
+// Bootstrap Admin Component
+function BootstrapAdmin({ user }: { user: User }) {
+  const [isBootstrapping, setIsBootstrapping] = useState(false);
+  const [message, setMessage] = useState("");
+  const bootstrapFirstAdmin = useMutation(api.auth.bootstrapFirstAdmin);
+
+  const handleBootstrap = async () => {
+    setIsBootstrapping(true);
+    setMessage("");
+
+    try {
+      const result = await bootstrapFirstAdmin({
+        wallet_address: user.walletAddress,
+      });
+
+      setMessage(result.message);
+      
+      if (result.success) {
+        // Refresh the page after successful bootstrap
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    } catch (error) {
+      setMessage("Failed to bootstrap admin: " + (error as Error).message);
+    } finally {
+      setIsBootstrapping(false);
+    }
+  };
+
+  return (
+    <div className="pb-20 min-h-screen bg-gray-50 p-8 flex items-center justify-center">
+      <Card className="max-w-md">
+        <CardHeader>
+          <CardTitle className="flex items-center space-x-2">
+            <Crown className="h-6 w-6 text-yellow-500" />
+            <span>Bootstrap Admin</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="text-sm text-gray-600">
+            <p className="mb-2">
+              <strong>Welcome!</strong> You're authenticated but not an admin yet.
+            </p>
+            <p className="mb-4">
+              Since there are no admin users in the system, you can bootstrap yourself as the first admin.
+            </p>
+            <div className="bg-blue-50 p-3 rounded-lg mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>Your wallet:</strong> {user.walletAddress.slice(0, 6)}...{user.walletAddress.slice(-4)}
+              </p>
+            </div>
+          </div>
+
+          {message && (
+            <div className={`p-3 rounded-lg ${
+              message.includes('Successfully') 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          <Button
+            onClick={handleBootstrap}
+            disabled={isBootstrapping}
+            className="w-full"
+          >
+            {isBootstrapping ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Bootstrapping...
+              </>
+            ) : (
+              <>
+                <Shield className="h-4 w-4 mr-2" />
+                Become First Admin
+              </>
+            )}
+          </Button>
+
+          <div className="text-xs text-gray-500">
+            <p>
+              <strong>Note:</strong> This only works if there are no existing admins in the system. 
+              After the first admin is created, new admins must be set by existing admins.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function AdminTab({ user, isAuthenticated }: AdminTabProps) {
   const [currentUserId, setCurrentUserId] = useState<Id<"users"> | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<"all" | "draft" | "published" | "archived">("all");
@@ -64,32 +178,38 @@ export default function AdminTab() {
   const [editingEvent, setEditingEvent] = useState<Id<"events"> | null>(null);
   const [isDevelopmentMode, setIsDevelopmentMode] = useState(false);
 
-  // Check if we're in development mode (no real authentication)
+  // Check authentication and admin status
   useEffect(() => {
     const init = async () => {
       try {
-        // TODO: Get actual user ID from authentication
-        // For now, we'll check if we're in development mode
+        // Check if we're in development mode
         const isDev = process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost';
+        setIsDevelopmentMode(isDev);
         
-        if (isDev) {
-          // In development mode, we'll skip real authentication
-          setIsDevelopmentMode(true);
-          setCurrentUserId(null); // Don't set a fake ID
-          setIsLoading(false);
-        } else {
-          // In production, you would get the real user ID from authentication
-          // For now, this will show an error
+        // Check if user is authenticated and has admin privileges
+        if (!isAuthenticated || !user) {
           setError("Authentication required. Please log in to access the admin panel.");
           setIsLoading(false);
+          return;
         }
+        
+        // If user is not admin and not in development mode, show bootstrap option
+        if (!user.isAdmin && !isDev) {
+          setError(null); // Clear error for bootstrap flow
+          setIsLoading(false);
+          return;
+        }
+        
+        // Set the current user ID
+        setCurrentUserId(user.id);
+        setIsLoading(false);
       } catch (err) {
         setError("Failed to initialize admin panel");
         setIsLoading(false);
       }
     };
     init();
-  }, []);
+  }, [isAuthenticated, user]);
 
   // Auto-seed database if needed
   const needsSeeding = useQuery(api.events.needsSeeding);
@@ -151,7 +271,7 @@ export default function AdminTab() {
     );
   }
 
-  // Error state
+  // Error state (authentication required)
   if (error) {
     return (
       <div className="pb-20 min-h-screen bg-gray-50 p-8 flex items-center justify-center">
@@ -165,6 +285,11 @@ export default function AdminTab() {
         </Card>
       </div>
     );
+  }
+
+  // Bootstrap admin flow (user is authenticated but not admin)
+  if (isAuthenticated && user && !user.isAdmin && !isDevelopmentMode) {
+    return <BootstrapAdmin user={user} />;
   }
 
   // Filter events based on search and status
