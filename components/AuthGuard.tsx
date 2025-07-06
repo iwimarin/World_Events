@@ -187,10 +187,13 @@ export default function AuthGuard({ children }: AuthGuardProps) {
         ]}
         coloredSquares={[
           [2, 2, "#D9F8FB"],
+          [3, 10, "#D9F8FB"],
           [6, 1, "#66E2F1"],
           [3, 4, "#D9F8FB"],
+          [12, 15, "#66E2F1"],
           [8, 3, "#66E2F1"],
           [11, 2, "#D9F8FB"],
+          [15, 10, "#D9F8FB"],
           [14, 4, "#66E2F1"],
           [1, 8, "#D9F8FB"],
           [16, 6, "#66E2F1"],
