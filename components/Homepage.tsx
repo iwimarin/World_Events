@@ -1,79 +1,25 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import EventCard from "./EventCard";
-import FilterBar from "./FilterBar";
-import { 
-  Calendar, 
-  MapPin, 
-  TrendingUp, 
-  Users, 
-  Star,
-  ArrowRight,
-  Sparkles,
-  Globe,
-  Settings,
-  Shield,
-  LogOut,
-  User,
-  UserCog
-} from "lucide-react";
-import { GridPattern } from "@/components/ui/grid-pattern";
-import { cn } from "@/lib/utils";
-
-// For now, using sample data. Later this will be replaced with Convex queries
-// const events = useQuery(api.events.listEvents, { paginationOpts: { numItems: 20, cursor: null } });
-// const featuredEvents = useQuery(api.events.getFeaturedEvents);
+import { useState, useEffect } from "react";
+import BottomNavigation from "./BottomNavigation";
+import EventsTab from "./tabs/EventsTab";
+import ContributeTab from "./tabs/ContributeTab";
+import BookmarksTab from "./tabs/BookmarksTab";
+import ProfileTab from "./tabs/ProfileTab";
 
 export default function Homepage() {
-  const [filters, setFilters] = useState({
-    search: "",
-    type: "",
-    location: "",
-    date: "",
-  });
-  
+  const [currentTab, setCurrentTab] = useState("events");
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Load events from Convex
-  const eventsQuery = useQuery(api.events.listEvents, { 
-    paginationOpts: { numItems: 50, cursor: null } 
-  });
-  const featuredEventsQuery = useQuery(api.events.getFeaturedEvents);
-  
-  // Auto-seed database if needed
-  const needsSeeding = useQuery(api.events.needsSeeding);
-  const seedDatabase = useMutation(api.events.seedSampleEvents);
-
-  useEffect(() => {
-    if (needsSeeding) {
-      seedDatabase().then((count) => {
-        if (count > 0) {
-          console.log(`Seeded ${count} sample events`);
-        }
-      });
-    }
-  }, [needsSeeding, seedDatabase]);
-
-  // Check if user is admin and fetch user data
+  // Check if user is admin
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        // Get current user data
         const response = await fetch('/api/auth/me');
         if (response.ok) {
           const data = await response.json();
           if (data.authenticated && data.user) {
-            setUser(data.user);
-            // Check if user is admin from real database data
             setIsAdmin(data.user.isAdmin || false);
           }
         }
@@ -87,357 +33,38 @@ export default function Homepage() {
     checkAdminStatus();
   }, []);
 
-  // Use real events data
-  const allEvents = eventsQuery?.page || [];
+  const handleTabChange = (tab: string) => {
+    setCurrentTab(tab);
+  };
 
-  // Filter the events based on current filters
-  const filteredEvents = useMemo(() => {
-    let filtered = [...allEvents];
-
-    // Search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (event) =>
-          event.name.toLowerCase().includes(searchLower) ||
-          event.description.toLowerCase().includes(searchLower) ||
-          event.tagline.toLowerCase().includes(searchLower) ||
-          `${event.location.city}, ${event.location.country}`.toLowerCase().includes(searchLower)
-      );
+  const renderCurrentTab = () => {
+    switch (currentTab) {
+      case "events":
+        return <EventsTab />;
+      case "contribute":
+        return <ContributeTab />;
+      case "bookmarks":
+        return <BookmarksTab />;
+      case "profile":
+        return <ProfileTab />;
+      default:
+        return <EventsTab />;
     }
-
-    // Type filter
-    if (filters.type) {
-      filtered = filtered.filter((event) => {
-        if (filters.type === "Conference") return event.type.conference;
-        if (filters.type === "Hackathon") return event.type.hackathon;
-        return true;
-      });
-    }
-
-    // Location filter (simplified - just matching city)
-    if (filters.location && filters.location !== "All Locations") {
-      filtered = filtered.filter((event) =>
-        `${event.location.city}, ${event.location.country}` === filters.location
-      );
-    }
-
-    // Date filter (simplified for demo)
-    if (filters.date && filters.date !== "All Dates") {
-      // For demo purposes, just return current results
-      // In real app, this would filter by actual dates
-    }
-
-    return filtered;
-  }, [filters, allEvents]);
-
-  const featuredEvents = filteredEvents.filter((event) => event.is_featured);
-  const regularEvents = filteredEvents.filter((event) => !event.is_featured);
-
-  const handleSearch = (searchTerm: string) => {
-    setFilters((prev) => ({ ...prev, search: searchTerm }));
-  };
-
-  const handleFilterByType = (type: string) => {
-    setFilters((prev) => ({ ...prev, type }));
-  };
-
-  const handleFilterByLocation = (location: string) => {
-    setFilters((prev) => ({ ...prev, location }));
-  };
-
-  const handleFilterByDate = (date: string) => {
-    setFilters((prev) => ({ ...prev, date }));
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      search: "",
-      type: "",
-      location: "",
-      date: "",
-    });
-  };
-
-  // Note: Admin status is now determined by the is_admin field in the Convex database
-  // To make a user an admin, update their record in the database directly
-
-  // Logout function
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-      // Refresh the page to trigger AuthGuard to show login screen
-      window.location.reload();
-    } catch (error) {
-      console.error('Error logging out:', error);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  const stats = {
-    totalEvents: allEvents.length,
-    featuredEvents: allEvents.filter(e => e.is_featured).length,
-    countries: new Set(allEvents.map(e => e.location.country)).size,
-    upcomingEvents: allEvents.filter(e => new Date(e.start_date) > new Date()).length,
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      {/* Hero Section */}
-      <div className="relative bg-white text-gray-900 overflow-hidden">
-        {/* Grid Pattern Background */}
-        <GridPattern
-          squares={[
-            [4, 4],
-            [5, 1],
-            [8, 2],
-            [5, 3],
-            [5, 5],
-            [10, 10],
-            [12, 15],
-            [15, 10],
-            [10, 15],
-            [15, 10],
-            [10, 15],
-            [15, 10],
-          ]}
-          className={cn(
-            "[mask-image:radial-gradient(400px_circle_at_center,white,transparent)]",
-            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12",
-          )}
-        />
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          {/* User Profile Section */}
-          {user && (
-            <div className="flex justify-center mb-6">
-              <div className="flex items-center space-x-4 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-white/20">
-                <div className="flex items-center space-x-2">
-                  {user.profilePictureUrl ? (
-                    <img
-                      src={user.profilePictureUrl}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-gray-900">
-                    {user.username || `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`}
-                  </span>
-                  {isAdmin && (
-                    <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 px-2 py-1 text-xs">
-                      Admin
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2">
-                  {isAdmin && (
-                    <Button
-                      onClick={() => {
-                        window.location.href = '/admin';
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="text-purple-600 hover:text-purple-900 border-purple-200 hover:border-purple-300"
-                    >
-                      <UserCog className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <Button
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    variant="outline"
-                    size="sm"
-                    className="text-gray-600 hover:text-gray-900"
-                  >
-                    {isLoggingOut ? (
-                      <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <LogOut className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="text-center space-y-6">
-            <div className="flex justify-center mb-4">
-              <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-4 py-1">
-                <Sparkles className="h-4 w-4 mr-1" />
-                Web3 Events Hub
-              </Badge>
-            </div>
-            
-
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              Attend the World
-              
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-            Find web3 happenings all around the globe.
-            </p>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-12">
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Calendar className="h-8 w-8 text-gray-500" />
-                </div>
-                <div className="text-3xl font-bold text-gray-900">{stats.totalEvents}</div>
-                <div className="text-gray-500">Total Events</div>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Star className="h-8 w-8 text-gray-500" />
-                </div>
-                <div className="text-3xl font-bold text-gray-900">{stats.featuredEvents}</div>
-                <div className="text-gray-500">Featured</div>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <Globe className="h-8 w-8 text-gray-500" />
-                </div>
-                <div className="text-3xl font-bold text-gray-900">{stats.countries}</div>
-                <div className="text-gray-500">Countries</div>
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center mb-2">
-                  <TrendingUp className="h-8 w-8 text-gray-500" />
-                </div>
-                <div className="text-3xl font-bold text-gray-900">{stats.upcomingEvents}</div>
-                <div className="text-gray-500">Upcoming</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Tab Content */}
+      <div className="min-h-screen">
+        {renderCurrentTab()}
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filter Bar */}
-        <div className="mb-8">
-          <FilterBar
-            onSearch={handleSearch}
-            onFilterByType={handleFilterByType}
-            onFilterByLocation={handleFilterByLocation}
-            onFilterByDate={handleFilterByDate}
-            onClearFilters={handleClearFilters}
-            activeFilters={filters}
-          />
-        </div>
-
-        {/* Featured Events Section */}
-        {featuredEvents.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                  <Star className="h-6 w-6 mr-2 text-purple-600" />
-                  Featured Events
-                </h2>
-                <p className="text-gray-600 mt-1">
-                  Hand-picked events you shouldn't miss
-                </p>
-              </div>
-              <Button variant="outline" className="hidden md:flex">
-                View All
-                <ArrowRight className="h-4 w-4 ml-1" />
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredEvents.map((event) => (
-                <EventCard key={event._id} event={event} featured />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* All Events Section */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                <Calendar className="h-6 w-6 mr-2 text-blue-600" />
-                All Events
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''} found
-              </p>
-            </div>
-          </div>
-
-          {/* Events Grid */}
-          {filteredEvents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredEvents.map((event) => (
-                <EventCard key={event._id} event={event} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16">
-              <div className="max-w-md mx-auto">
-                <div className="w-24 h-24 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Calendar className="h-12 w-12 text-gray-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  No events found
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Try adjusting your search or filter criteria to find more events.
-                </p>
-                <Button onClick={handleClearFilters} variant="outline">
-                  Clear All Filters
-                </Button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Load More Button (for future pagination) */}
-        {filteredEvents.length >= 9 && (
-          <div className="text-center mt-12">
-            <Button size="lg" variant="outline" className="px-8">
-              Load More Events
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Footer CTA */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">
-              Hosting a Web3 Event?
-            </h3>
-            <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-              Join our platform and reach thousands of Web3 enthusiasts. List your event and connect with the community.
-            </p>
-            <Button 
-              size="lg" 
-              className="bg-white text-blue-600 hover:bg-gray-100"
-              onClick={() => {
-                // TODO: Navigate to admin page or event submission
-                console.log("Navigate to event submission");
-              }}
-            >
-              Submit Your Event
-              <ArrowRight className="h-4 w-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-
+      {/* Bottom Navigation */}
+      <BottomNavigation 
+        currentTab={currentTab}
+        onTabChange={handleTabChange}
+        isAdmin={isAdmin}
+      />
     </div>
   );
 } 

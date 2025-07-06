@@ -112,3 +112,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Safe area support for mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
