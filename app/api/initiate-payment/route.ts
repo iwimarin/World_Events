@@ -1,5 +1,9 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
+
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   const uuid = crypto.randomUUID().replace(/-/g, "");

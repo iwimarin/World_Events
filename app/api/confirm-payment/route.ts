@@ -2,6 +2,9 @@ import { MiniAppPaymentSuccessPayload } from "@worldcoin/minikit-js";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
+
 interface IRequestPayload {
   payload: MiniAppPaymentSuccessPayload;
 }

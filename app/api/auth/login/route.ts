@@ -6,6 +6,9 @@ import { nanoid } from 'nanoid'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
 
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
+
 interface IRequestPayload {
 	payload: MiniAppWalletAuthSuccessPayload
 	nonce: string

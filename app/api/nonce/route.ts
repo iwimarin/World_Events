@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { randomBytes } from "crypto";
+
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
 
 export function GET(req: NextRequest) {
     // Expects only alphanumeric characters

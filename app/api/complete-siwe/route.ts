@@ -2,6 +2,9 @@ import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { MiniAppWalletAuthSuccessPayload, verifySiweMessage } from '@worldcoin/minikit-js'
 
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
+
 interface IRequestPayload {
 	payload: MiniAppWalletAuthSuccessPayload
 	nonce: string

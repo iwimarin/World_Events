@@ -5,6 +5,9 @@ import { ConvexHttpClient } from 'convex/browser';
 import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
 
+// Force dynamic rendering since we use cookies
+export const dynamic = 'force-dynamic';
+
 // Create Convex client for API routes
 const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
 
