@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Sora } from "next/font/google";
 import "./globals.css";
-import MiniKitProvider from "@/components/minikit-provider";
+import ConditionalMiniKitProvider from "@/components/conditional-minikit-provider";
 import ConvexClientProvider from "@/components/convex-provider";
 import dynamic from "next/dynamic";
 import NextAuthProvider from "@/components/next-auth-provider";
@@ -39,9 +39,9 @@ export default function RootLayout({
         <NextAuthProvider>
           <ConvexClientProvider>
             <ErudaProvider>
-              <MiniKitProvider>
+              <ConditionalMiniKitProvider>
                 {children}
-              </MiniKitProvider>
+              </ConditionalMiniKitProvider>
             </ErudaProvider>
           </ConvexClientProvider>
         </NextAuthProvider>

@@ -1,6 +1,5 @@
 "use client";
 import {
-  MiniKit,
   VerificationLevel,
   ISuccessResult,
   MiniAppVerifyActionErrorPayload,
@@ -8,6 +7,7 @@ import {
 } from "@worldcoin/minikit-js";
 import { useCallback, useState } from "react";
 import { Button } from "@worldcoin/mini-apps-ui-kit-react";
+import { useMiniKit } from "@/hooks/useMiniKit";
 
 export type VerifyCommandInput = {
   action: string;
@@ -26,14 +26,15 @@ export const VerifyBlock = () => {
     MiniAppVerifyActionErrorPayload | IVerifyResponse | null
   >(null);
   const [verified, setVerified] = useState<boolean>(false);
+  const { isMiniApp, isInstalled, commandsAsync } = useMiniKit();
 
   const handleVerify = useCallback(async () => {
-    if (!MiniKit.isInstalled()) {
+    if (!isInstalled() || !commandsAsync.verify) {
       console.warn("Tried to invoke 'verify', but MiniKit is not installed.");
       return;
     }
 
-    const { finalPayload } = await MiniKit.commandsAsync.verify(verifyPayload);
+    const { finalPayload } = await commandsAsync.verify(verifyPayload);
 
     // no need to verify if command errored
     if (finalPayload.status === "error") {
@@ -69,6 +70,16 @@ export const VerifyBlock = () => {
     setHandleVerifyResponse(verifyResponseJson);
     return verifyResponseJson;
   }, []);
+
+  if (!isMiniApp) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className="text-gray-600 text-sm">
+          Running in web mode - World ID verification not available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center">

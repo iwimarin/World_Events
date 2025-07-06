@@ -20,6 +20,8 @@ import {
   Settings,
   Shield
 } from "lucide-react";
+import { GridPattern } from "@/components/ui/grid-pattern";
+import { cn } from "@/lib/utils";
 
 // For now, using sample data. Later this will be replaced with Convex queries
 // const events = useQuery(api.events.listEvents, { paginationOpts: { numItems: 20, cursor: null } });
@@ -164,66 +166,76 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="relative bg-white text-gray-900 overflow-hidden">
+        {/* Grid Pattern Background */}
+        <GridPattern
+          squares={[
+            [4, 4],
+            [5, 1],
+            [8, 2],
+            [5, 3],
+            [5, 5],
+            [10, 10],
+            [12, 15],
+            [15, 10],
+            [10, 15],
+            [15, 10],
+            [10, 15],
+            [15, 10],
+          ]}
+          className={cn(
+            "[mask-image:radial-gradient(400px_circle_at_center,white,transparent)]",
+            "inset-x-0 inset-y-[-30%] h-[200%] skew-y-12",
+          )}
+        />
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center space-y-6">
             <div className="flex justify-center mb-4">
-              <Badge className="bg-white/20 text-white border-white/30 px-4 py-1">
+              <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-4 py-1">
                 <Sparkles className="h-4 w-4 mr-1" />
                 Web3 Events Hub
               </Badge>
             </div>
             
-            {/* Development Helper - Remove in production */}
-            <div className="flex justify-center mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white/10 text-white border-white/30 hover:bg-white/20"
-                onClick={toggleAdminStatus}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                {isAdmin ? 'Disable Admin' : 'Enable Admin'} (Dev)
-              </Button>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
-              Discover Amazing
-              <br />
-              Web3 Events
+
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              Attend the World
+              
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto">
-              Connect with the global Web3 community. Find conferences, hackathons, and meetups happening around the world.
+            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+            Find web3 happenings all around the globe.
             </p>
             
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mt-12">
               <div className="text-center">
                 <div className="flex justify-center mb-2">
-                  <Calendar className="h-8 w-8 text-blue-200" />
+                  <Calendar className="h-8 w-8 text-gray-500" />
                 </div>
-                <div className="text-3xl font-bold">{stats.totalEvents}</div>
-                <div className="text-blue-200">Total Events</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.totalEvents}</div>
+                <div className="text-gray-500">Total Events</div>
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-2">
-                  <Star className="h-8 w-8 text-purple-200" />
+                  <Star className="h-8 w-8 text-gray-500" />
                 </div>
-                <div className="text-3xl font-bold">{stats.featuredEvents}</div>
-                <div className="text-blue-200">Featured</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.featuredEvents}</div>
+                <div className="text-gray-500">Featured</div>
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-2">
-                  <Globe className="h-8 w-8 text-indigo-200" />
+                  <Globe className="h-8 w-8 text-gray-500" />
                 </div>
-                <div className="text-3xl font-bold">{stats.countries}</div>
-                <div className="text-blue-200">Countries</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.countries}</div>
+                <div className="text-gray-500">Countries</div>
               </div>
               <div className="text-center">
                 <div className="flex justify-center mb-2">
-                  <TrendingUp className="h-8 w-8 text-green-200" />
+                  <TrendingUp className="h-8 w-8 text-gray-500" />
                 </div>
-                <div className="text-3xl font-bold">{stats.upcomingEvents}</div>
-                <div className="text-blue-200">Upcoming</div>
+                <div className="text-3xl font-bold text-gray-900">{stats.upcomingEvents}</div>
+                <div className="text-gray-500">Upcoming</div>
               </div>
             </div>
           </div>
@@ -287,7 +299,7 @@ export default function Homepage() {
           {/* Events Grid */}
           {filteredEvents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(featuredEvents.length > 0 ? regularEvents : filteredEvents).map((event) => (
+              {filteredEvents.map((event) => (
                 <EventCard key={event._id} event={event} />
               ))}
             </div>

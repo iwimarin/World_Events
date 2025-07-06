@@ -1,7 +1,8 @@
 "use client";
-import { MiniKit, WalletAuthInput } from "@worldcoin/minikit-js";
+import { WalletAuthInput } from "@worldcoin/minikit-js";
 import { Button } from "@worldcoin/mini-apps-ui-kit-react";
 import { useCallback, useEffect, useState } from "react";
+import { useMiniKit } from "@/hooks/useMiniKit";
 
 const walletAuthInput = (nonce: string): WalletAuthInput => {
     return {
@@ -21,9 +22,10 @@ type User = {
 
 export const WalletAuth = () => {
     const [user, setUser] = useState<User | null>(null);
+    const { isMiniApp, user: miniKitUser, isInstalled, commandsAsync } = useMiniKit();
 
     const handleWalletAuth = async () => {
-        if (!MiniKit.isInstalled()) {
+        if (!isInstalled() || !commandsAsync.walletAuth) {
             console.warn('Tried to invoke "walletAuth", but MiniKit is not installed.')
             return;
         }
@@ -31,7 +33,7 @@ export const WalletAuth = () => {
         const res = await fetch(`/api/nonce`)
         const { nonce } = await res.json()
 
-        const { commandPayload: generateMessageResult, finalPayload } = await MiniKit.commandsAsync.walletAuth(walletAuthInput(nonce))
+        const { commandPayload: generateMessageResult, finalPayload } = await commandsAsync.walletAuth(walletAuthInput(nonce))
 
         if (finalPayload.status === 'error') {
             return
@@ -48,7 +50,7 @@ export const WalletAuth = () => {
             })
 
             if (response.status === 200) {
-                setUser(MiniKit.user)
+                setUser(miniKitUser)
             }
         }
     };
@@ -56,6 +58,16 @@ export const WalletAuth = () => {
     const handleSignOut = useCallback(() => {
         setUser(null);
     }, []);
+
+    if (!isMiniApp) {
+        return (
+            <div className="flex flex-col items-center">
+                <div className="text-gray-600 text-sm">
+                    Running in web mode - wallet authentication not available
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center">

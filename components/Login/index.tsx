@@ -1,7 +1,8 @@
 "use client";
-import { MiniKit, WalletAuthInput } from "@worldcoin/minikit-js";
+import { WalletAuthInput } from "@worldcoin/minikit-js";
 import { Button } from "@worldcoin/mini-apps-ui-kit-react";
 import { useCallback, useEffect, useState } from "react";
+import { useMiniKit } from "@/hooks/useMiniKit";
 
 const walletAuthInput = (nonce: string): WalletAuthInput => {
     return {
@@ -22,6 +23,7 @@ type User = {
 export const Login = () => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(false);
+    const { isMiniApp, user: miniKitUser, commandsAsync } = useMiniKit();
     
     const refreshUserData = useCallback(async () => {
         try {
@@ -42,12 +44,17 @@ export const Login = () => {
     }, [refreshUserData]);
     
     const handleLogin = async () => {
+        if (!isMiniApp || !commandsAsync.walletAuth) {
+            alert("Wallet authentication is only available in Mini App mode");
+            return;
+        }
+        
         try {
             setLoading(true);
             const res = await fetch(`/api/nonce`);
             const { nonce } = await res.json();
 
-            const { finalPayload } = await MiniKit.commandsAsync.walletAuth(walletAuthInput(nonce));
+            const { finalPayload } = await commandsAsync.walletAuth(walletAuthInput(nonce));
 
             if (finalPayload.status === 'error') {
                 setLoading(false);
@@ -65,7 +72,7 @@ export const Login = () => {
                 });
 
                 if (response.status === 200) {
-                    setUser(MiniKit.user)
+                    setUser(miniKitUser)
                 }
                 setLoading(false);
             }
@@ -86,6 +93,16 @@ export const Login = () => {
             console.error("Logout error:", error);
         }
     };
+
+    if (!isMiniApp) {
+        return (
+            <div className="flex flex-col items-center">
+                <div className="text-gray-600 text-sm">
+                    Running in web mode - authentication not available
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center">

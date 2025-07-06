@@ -1,14 +1,14 @@
 "use client";
 import {
-  MiniKit,
   tokenToDecimals,
   Tokens,
   PayCommandInput,
 } from "@worldcoin/minikit-js";
 import { Button, Input, Select } from "@worldcoin/mini-apps-ui-kit-react";
 import { useState } from "react";
+import { useMiniKit } from "@/hooks/useMiniKit";
 
-const sendPayment = async (recipientAddress: string, selectedToken: Tokens, amount: number) => {
+const sendPayment = async (recipientAddress: string, selectedToken: Tokens, amount: number, payCommand: any) => {
   try {
     const res = await fetch(`/api/initiate-payment`, {
       method: "POST",
@@ -29,8 +29,8 @@ const sendPayment = async (recipientAddress: string, selectedToken: Tokens, amou
       ],
       description: "Thanks for the coffee! ☕",
     };
-    if (MiniKit.isInstalled()) {
-      return await MiniKit.commandsAsync.pay(payload);
+    if (payCommand) {
+      return await payCommand(payload);
     }
     return null;
   } catch (error: unknown) {
@@ -43,15 +43,17 @@ const handlePay = async (
   recipientAddress: string,
   selectedToken: Tokens,
   amount: number,
-  setStatus: (status: string | null) => void
+  setStatus: (status: string | null) => void,
+  isInstalled: () => boolean,
+  payCommand: any
 ) => {
-  if (!MiniKit.isInstalled()) {
+  if (!isInstalled()) {
     setStatus("MiniKit is not installed");
     return;
   }
 
   setStatus("Processing payment...");
-  const sendPaymentResponse = await sendPayment(recipientAddress, selectedToken, amount);
+  const sendPaymentResponse = await sendPayment(recipientAddress, selectedToken, amount, payCommand);
   const response = sendPaymentResponse?.finalPayload;
 
   if (!response) {
@@ -81,6 +83,18 @@ export const PayBlock = () => {
   const [selectedToken, setSelectedToken] = useState<Tokens>(Tokens.WLD);
   const [amount, setAmount] = useState<number>(0.5);
   const [status, setStatus] = useState<string | null>(null);
+  const { isMiniApp, isInstalled, commandsAsync } = useMiniKit();
+
+  if (!isMiniApp) {
+    return (
+      <div className="flex flex-col items-center gap-4 p-6 border rounded-lg shadow-sm">
+        <h3 className="text-xl font-semibold">Buy me a coffee ☕</h3>
+        <div className="text-gray-600 text-sm">
+          Running in web mode - payments not available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center gap-4 p-6 border rounded-lg shadow-sm">
@@ -121,7 +135,7 @@ export const PayBlock = () => {
       </div>
 
       <Button
-        onClick={() => handlePay(recipientAddress, selectedToken, amount, setStatus)}
+        onClick={() => handlePay(recipientAddress, selectedToken, amount, setStatus, isInstalled, commandsAsync.pay)}
         className="w-full mt-2"
       >
         Buy Coffee
