@@ -18,7 +18,9 @@ import {
   Sparkles,
   Globe,
   Settings,
-  Shield
+  Shield,
+  LogOut,
+  User
 } from "lucide-react";
 import { GridPattern } from "@/components/ui/grid-pattern";
 import { cn } from "@/lib/utils";
@@ -37,6 +39,8 @@ export default function Homepage() {
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Load events from Convex
   const eventsQuery = useQuery(api.events.listEvents, { 
@@ -58,15 +62,22 @@ export default function Homepage() {
     }
   }, [needsSeeding, seedDatabase]);
 
-  // Check if user is admin
+  // Check if user is admin and fetch user data
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        // TODO: Replace with actual authentication check
-        // For now, we'll simulate admin detection
-        // In production, this would check the user's wallet address and query the database
-        const isAdminUser = localStorage.getItem('isAdmin') === 'true';
-        setIsAdmin(isAdminUser);
+        // Get current user data
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.authenticated && data.user) {
+            setUser(data.user);
+            // Check if user is admin
+            // In production, this would check the user's wallet address and query the database
+            const isAdminUser = localStorage.getItem('isAdmin') === 'true';
+            setIsAdmin(isAdminUser);
+          }
+        }
       } catch (error) {
         console.error('Error checking admin status:', error);
       } finally {
@@ -156,6 +167,22 @@ export default function Homepage() {
     localStorage.setItem('isAdmin', newAdminStatus.toString());
   };
 
+  // Logout function
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+      // Refresh the page to trigger AuthGuard to show login screen
+      window.location.reload();
+    } catch (error) {
+      console.error('Error logging out:', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   const stats = {
     totalEvents: allEvents.length,
     featuredEvents: allEvents.filter(e => e.is_featured).length,
@@ -190,6 +217,43 @@ export default function Homepage() {
         />
         
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          {/* User Profile Section */}
+          {user && (
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center space-x-4 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-sm border border-white/20">
+                <div className="flex items-center space-x-2">
+                  {user.profilePictureUrl ? (
+                    <img
+                      src={user.profilePictureUrl}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-900">
+                    {user.username || `${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  {isLoggingOut ? (
+                    <div className="w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <LogOut className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="text-center space-y-6">
             <div className="flex justify-center mb-4">
               <Badge className="bg-gray-100 text-gray-800 border-gray-200 px-4 py-1">

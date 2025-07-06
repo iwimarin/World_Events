@@ -3,20 +3,63 @@ import { NextRequest, NextResponse } from 'next/server'
 import { MiniAppWalletAuthSuccessPayload, verifySiweMessage } from '@worldcoin/minikit-js'
 import { SignJWT } from 'jose'
 import { nanoid } from 'nanoid'
+import { ConvexHttpClient } from 'convex/browser'
+import { api } from '@/convex/_generated/api'
 
 interface IRequestPayload {
 	payload: MiniAppWalletAuthSuccessPayload
 	nonce: string
 }
-// Mock implementation - replace with actual DB call
-async function findOrCreateUser(walletAddress: string) {
+
+// Create Convex client for API routes
+const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
+
+// Real implementation using Convex database
+async function findOrCreateUser(walletAddress: string, payload: MiniAppWalletAuthSuccessPayload) {
 	console.log(`Finding or creating user with wallet: ${walletAddress}`);
 
+	// First, check if user already exists
+	const existingUser = await convexClient.query(api.auth.getCurrentUser, {
+		wallet_address: walletAddress
+	});
+
+	if (existingUser) {
+		// User exists, return existing user data
+		return {
+			id: existingUser._id,
+			walletAddress: existingUser.wallet_address,
+			username: existingUser.username,
+			profilePictureUrl: existingUser.profile_picture_url,
+			isNewUser: false
+		};
+	}
+
+	// User doesn't exist, create new user
+	// Extract additional user info from payload if available
+	const userId = await convexClient.mutation(api.auth.upsertUser, {
+		wallet_address: walletAddress,
+		username: undefined, // MiniKit doesn't provide username in SIWE payload
+		profile_picture_url: undefined, // MiniKit doesn't provide profile picture in SIWE payload
+		permissions: undefined,
+		opted_into_analytics: undefined,
+		world_app_version: undefined,
+		device_os: undefined,
+	});
+
+	// Get the created user
+	const newUser = await convexClient.query(api.auth.getCurrentUser, {
+		wallet_address: walletAddress
+	});
+
+	if (!newUser) {
+		throw new Error("Failed to create user");
+	}
+
 	return {
-		id: crypto.randomUUID(),
-		walletAddress,
-		username: null,
-		profilePictureUrl: null,
+		id: newUser._id,
+		walletAddress: newUser.wallet_address,
+		username: newUser.username,
+		profilePictureUrl: newUser.profile_picture_url,
 		isNewUser: true
 	};
 }
@@ -44,7 +87,7 @@ export const POST = async (req: NextRequest) => {
 		}
 
 		const walletAddress = payload.address;
-		const user = await findOrCreateUser(walletAddress);
+		const user = await findOrCreateUser(walletAddress, payload);
 
 		const token = await new SignJWT({
 			userId: user.id,

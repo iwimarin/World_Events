@@ -1,18 +1,37 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '@/convex/_generated/api';
+import { Id } from '@/convex/_generated/dataModel';
 
-// Mock implementation - replace with actual DB call
-async function getUserById(userId: string) {
-    console.log(`Getting user with ID: ${userId}`);
+// Create Convex client for API routes
+const convexClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
 
-    return {
-        id: userId,
-        walletAddress: "0x0eb431cd91e7abbd29a204b2edf33636ad45ed08",
-        username: "lemike.1234",
-        profilePictureUrl: "https://i.pravatar.cc/150?img=1",
-        isNewUser: false
-    };
+// Real implementation using Convex database
+async function getUserByWallet(walletAddress: string) {
+    console.log(`Getting user with wallet: ${walletAddress}`);
+
+    try {
+        const user = await convexClient.query(api.auth.getCurrentUser, {
+            wallet_address: walletAddress
+        });
+
+        if (!user) {
+            return null;
+        }
+
+        return {
+            id: user._id,
+            walletAddress: user.wallet_address,
+            username: user.username,
+            profilePictureUrl: user.profile_picture_url,
+            isNewUser: false
+        };
+    } catch (error) {
+        console.error('Error getting user:', error);
+        return null;
+    }
 }
 
 export async function GET() {
@@ -32,14 +51,21 @@ export async function GET() {
             new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_replace_in_production')
         );
         
-        if (!payload.userId) {
+        if (!payload.walletAddress) {
             return NextResponse.json({ 
                 authenticated: false,
                 message: 'Invalid token' 
             }, { status: 401 });
         }
 
-        const user = await getUserById(payload.userId as string);
+        const user = await getUserByWallet(payload.walletAddress as string);
+        
+        if (!user) {
+            return NextResponse.json({ 
+                authenticated: false,
+                message: 'User not found' 
+            }, { status: 401 });
+        }
         
         return NextResponse.json({
             authenticated: true,
